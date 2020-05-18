@@ -18,6 +18,7 @@ export default function (Glide, Components, Events) {
      * @return {Void}
      */
     mount () {
+      this.isEnabled = true;
       this.start()
 
       if (Glide.settings.hoverpause) {
@@ -32,6 +33,11 @@ export default function (Glide, Components, Events) {
      * @return {Void}
      */
     start () {
+      if (!this.isEnabled) {
+        return
+      }
+
+      this.isEnabled = true;
       if (Glide.settings.autoplay) {
         if (isUndefined(this._i)) {
           this._i = setInterval(() => {
@@ -120,7 +126,12 @@ export default function (Glide, Components, Events) {
    * - while starting a swipe
    * - on updating via API to reset interval that may changed
    */
-  Events.on(['run.before', 'pause', 'destroy', 'swipe.start', 'update'], () => {
+  Events.on(['run.before', 'swipe.start', 'update'], () => {
+    Autoplay.stop()
+  })
+
+  Events.on(['pause', 'destroy'], () => {
+    Autoplay.isEnabled = false;
     Autoplay.stop()
   })
 
@@ -130,7 +141,19 @@ export default function (Glide, Components, Events) {
    * - on playing via API
    * - while ending a swipe
    */
-  Events.on(['run.after', 'play', 'swipe.end'], () => {
+  Events.on(['run.after', 'swipe.end'], () => {
+    Autoplay.start()
+  })
+
+
+  /**
+   * Start autoplaying:
+   * - after each run, to restart autoplaying
+   * - on playing via API
+   * - while ending a swipe
+   */
+  Events.on(['play'], () => {
+    Autoplay.isEnabled = true;
     Autoplay.start()
   })
 
